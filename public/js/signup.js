@@ -17,19 +17,24 @@ async function submitSignUpForm(e) {
       phoneNum: phoneNumEl.value,
       password: passwordEl.value,
     };
-    const response = await axiosInstance.post("/sign-up", newUser);
-    nameEl.value = "";
-    emailEl.value = "";
-    passwordEl.value = "";
-    phoneNumEl.value = "";
-    window.location.href = `/login.html`;
-  } catch (err) {
-    if (err.response && err.response.status === 409) {
-      window.location.href = `./login.html`;
+    const response = await axiosInstance.post("/user/sign-up", newUser);
+    console.log(response);
+    if (confirm("Registration Successful?")) {
       nameEl.value = "";
       emailEl.value = "";
       passwordEl.value = "";
       phoneNumEl.value = "";
+      window.location.href = `./login.html`;
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 409) {
+      if (confirm("You are already registered. Please log in.")) {
+        window.location.href = `./login.html`;
+        nameEl.value = "";
+        emailEl.value = "";
+        passwordEl.value = "";
+        phoneNumEl.value = "";
+      }
     } else {
       alert("Some error occured. Please try again.");
     }
