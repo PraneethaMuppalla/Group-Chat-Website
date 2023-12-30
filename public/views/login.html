@@ -10,7 +10,7 @@
       integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
       crossorigin="anonymous"
     />
-    <title>Expense Tracker</title>
+    <title>Group Chat</title>
   </head>
   <body id="body">
     <nav>
@@ -19,10 +19,10 @@
       </div>
     </nav>
     <div
-      class="container middle-container d-flex flex-column justify-content-center"
+      class="container middle-container d-flex flex-column justify-content-start mt-3"
     >
       <div class="row d-flex flex-column align-items-center">
-        <div class="col-12 mb-3 text-center">
+        <div class="col-10 col-lg-5 col-md-7 m-2">
           <h2 class="first-heading">Login to Your Account</h2>
         </div>
         <div
@@ -30,22 +30,26 @@
         >
           <form id="loginForm">
             <div class="mb-3">
-              <label for="loginEmail" class="form-label fw-bold">Email</label>
+              <label for="phoneNum" class="form-label fw-normal"
+                >Phone Number</label
+              >
               <input
-                type="email"
+                type="tel"
                 class="form-control"
-                id="loginEmail"
+                id="phoneNum"
+                pattern="[0-9]{10}"
+                title="9876543210"
                 required
               />
             </div>
             <div class="mb-3">
-              <label for="loginPassword" class="form-label fw-bold"
+              <label for="password" class="form-label fw-normal"
                 >Password</label
               >
               <input
                 type="password"
                 class="form-control"
-                id="loginPassword"
+                id="password"
                 required
               />
             </div>
@@ -64,7 +68,7 @@
           </form>
         </div>
         <div class="col-11 col-lg-5 col-md-8 p-md-4 p-3 bg-white custom-border">
-          <a href="./signup.html">New to Expense Tracker? Create an account</a>
+          <a href="./signup.html">New to Group Chat? Create an account</a>
         </div>
       </div>
     </div>
