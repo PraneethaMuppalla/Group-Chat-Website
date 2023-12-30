@@ -19,13 +19,8 @@ const accessLogStream = fs.createWriteStream(
 
 //middleware
 const app = express();
-app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "http://127.0.0.1:5500",
-//   })
-// );
 app.use(cors());
+app.use(express.json());
 app.use(helmet());
 app.use(morgan("combined", { stream: accessLogStream }));
 

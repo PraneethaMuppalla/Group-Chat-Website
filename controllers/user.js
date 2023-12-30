@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { use } = require("../routes/user");
 
 function isStringInValid(string) {
   if (!string || string.length === 0) {
@@ -13,7 +12,7 @@ function isStringInValid(string) {
 }
 
 function generateToken(userId) {
-  return jwt.sign(userId, process.env.TOKEN_SECRET);
+  return jwt.sign({ id: userId }, process.env.TOKEN_SECRET);
 }
 
 exports.signUpUser = async (req, res, next) => {

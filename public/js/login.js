@@ -1,5 +1,5 @@
 const axiosInstance = axios.create({
-  baseUrl: "http://localhost:3000",
+  baseURL: "http://localhost:3000",
 });
 
 const formEl = document.getElementById("loginForm");
@@ -13,9 +13,23 @@ async function loginForm(e) {
       phoneNum: phoneNumEl.value,
       password: passwordEl.value,
     };
-    await axiosInstance.post("/user/login", loginUser);
+    const response = await axiosInstance.post("/user/login", loginUser);
+    if (confirm("Login successful")) {
+      passwordEl.value = "";
+      phoneNumEl.value = "";
+      localStorage.setItem("token", response.data.token);
+      window.location.href = "./home.html";
+    }
   } catch (err) {
-    console.error(err);
+    if (err.response && err.response.status === 404) {
+      if (confirm("You are not registered. Please Signup")) {
+        window.location.href = "./signup.html";
+      }
+    } else if (err.response && err.response.status === 401) {
+      alert("Password is incorrect.");
+    } else {
+      alert("Some error occured. Please try again.");
+    }
   }
 }
 
