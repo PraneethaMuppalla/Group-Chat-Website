@@ -11,7 +11,7 @@
       crossorigin="anonymous"
     />
 
-    <title>Expense Tracker</title>
+    <title>Group Chat</title>
   </head>
   <body id="body">
     <nav>
@@ -25,29 +25,38 @@
       <div
         class="row d-flex flex-column justify-content-center align-items-center"
       >
-        <div class="col-12 mb-3 text-center">
-          <h2 class="fw-medium">Create Account</h2>
+        <div class="col-10 col-lg-5 col-md-7">
+          <h2 class="fw-medium">Get started!</h2>
         </div>
         <div
           class="col-10 col-lg-5 col-md-7 p-md-4 p-3 bg-white custom-border mb-3"
         >
           <form id="form">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Name</label>
+            <div class="mb-2">
+              <label for="name" class="form-label fw-normal">Name</label>
               <input type="text" class="form-control" id="name" required />
             </div>
-            <div class="mb-3">
-              <label for="email" class="form-label fw-bold">Email</label>
+            <div class="mb-2">
+              <label for="email" class="form-label fw-normal">Email</label>
               <input type="email" class="form-control" id="email" required />
             </div>
-            <div class="mb-3">
-              <label for="phoneNum" class="form-label fw-bold"
+            <div class="mb-2">
+              <label for="phoneNum" class="form-label fw-normal"
                 >Phone Number</label
               >
-              <input type="email" class="form-control" id="phoneNum" required />
+              <input
+                type="tel"
+                class="form-control"
+                id="phoneNum"
+                pattern="[0-9]{10}"
+                title="9876543210"
+                required
+              />
             </div>
-            <div class="mb-3">
-              <label for="password" class="form-label fw-bold">Password</label>
+            <div class="mb-2">
+              <label for="password" class="form-label fw-normal"
+                >Password</label
+              >
               <input
                 type="password"
                 class="form-control"
@@ -55,12 +64,12 @@
                 required
               />
             </div>
-            <button type="submit" class="button mb-3" id="signUp">
+            <button type="submit" class="button mt-2" id="signUp">
               Sign Up
             </button>
           </form>
         </div>
-        <div class="col-11 col-lg-5 col-md-8 p-md-4 p-3 bg-white custom-border">
+        <div class="col-10 col-lg-5 col-md-7 p-md-4 p-3 bg-white custom-border">
           <a href="./login.html">Existing User? Login</a>
         </div>
       </div>
