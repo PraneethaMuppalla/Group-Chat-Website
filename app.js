@@ -20,6 +20,11 @@ const accessLogStream = fs.createWriteStream(
 //middleware
 const app = express();
 app.use(express.json());
+// app.use(
+//   cors({
+//     origin: "http://127.0.0.1:5500",
+//   })
+// );
 app.use(cors());
 app.use(helmet());
 app.use(morgan("combined", { stream: accessLogStream }));
@@ -30,9 +35,7 @@ app.use("/user", userRoutes);
 sequelise
   .sync()
   .then(() => {
-    app.listen(process.env.PORT || 3000, () => {
-      console.log(`Sever is listening on port 3000`);
-    });
+    app.listen(process.env.PORT || 3000);
   })
   .catch((err) => {
     console.error(err);

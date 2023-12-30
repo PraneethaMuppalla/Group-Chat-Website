@@ -19,7 +19,7 @@ async function submitSignUpForm(e) {
     };
     const response = await axiosInstance.post("/user/sign-up", newUser);
     console.log(response);
-    if (confirm("Registration Successful?")) {
+    if (confirm("Registration Successful.")) {
       nameEl.value = "";
       emailEl.value = "";
       passwordEl.value = "";
