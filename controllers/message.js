@@ -1,4 +1,5 @@
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 
 const Message = require("../models/message");
 const User = require("../models/user");
@@ -30,13 +31,14 @@ exports.postNewMsg = async (req, res, next) => {
 
 exports.getAllMsg = async (req, res, next) => {
   try {
-    // const response = await req.user.getMessages({
-    //   attributes: ["id", "message", "time"],
-    // });
-
+    let lastMsgId = +req.query.lastMsgId || null;
+    let count = await Message.count();
+    if (lastMsgId === null || lastMsgId < count - 10) {
+      lastMsgId = count - 10;
+    }
     const response = await Message.findAll({
       attributes: [
-        "id",
+        ["id", "messageId"],
         "message",
         "time",
         [
@@ -52,6 +54,11 @@ exports.getAllMsg = async (req, res, next) => {
           attributes: ["name"],
         },
       ],
+      where: {
+        id: {
+          [Op.gt]: lastMsgId,
+        },
+      },
     });
 
     res.status(200).json({ success: true, msg: response });

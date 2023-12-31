@@ -1,4 +1,9 @@
 const token = localStorage.getItem("token");
+let itemsFromLs = localStorage.getItem("messages");
+let items = JSON.parse(itemsFromLs);
+if (!items || items.length === 0) {
+  items = [];
+}
 const axiosInstance = axios.create({
   baseURL: "http://localhost:3000",
   headers: { Authorization: token },
@@ -9,7 +14,6 @@ const messageEl = document.getElementById("msg");
 const msgRow = document.getElementById("messages-row");
 
 function renderEachmsg(each, belongsToUser) {
-  console.log(each);
   const divEl = document.createElement("div");
   if (belongsToUser == 1) {
     divEl.className = " message sent";
@@ -54,9 +58,22 @@ async function postNewMsg(e) {
 
 async function getAllMsgs() {
   try {
-    msgRow.innerHTML = "";
-    const response = await axiosInstance.get("/msg/get-all-msg");
-    response.data.msg.forEach((each) => {
+    let lastMsgId;
+    if (items.length === 0) {
+      lastMsgId = null;
+    } else {
+      lastMsgId = items[items.length - 1].messageId;
+    }
+    const response = await axiosInstance.get(
+      `/msg/get-all-msg?lastMsgId=${lastMsgId}`
+    );
+    const length = response.data.msg.length;
+    if (length > 0) {
+      items.splice(0, length);
+      items.splice(items.length, 0, ...response.data.msg);
+      localStorage.setItem("messages", JSON.stringify(items));
+    }
+    items.forEach((each) => {
       renderEachmsg(each, each.belongsToUser);
     });
   } catch (err) {
@@ -67,6 +84,7 @@ async function getAllMsgs() {
 
 formEl.addEventListener("submit", postNewMsg);
 window.addEventListener("DOMContentLoaded", getAllMsgs);
+
 // setInterval(() => {
 //   getAllMsgs();
 // }, 1000);
