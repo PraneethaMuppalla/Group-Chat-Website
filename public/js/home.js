@@ -8,10 +8,21 @@ const formEl = document.getElementById("form");
 const messageEl = document.getElementById("msg");
 const msgRow = document.getElementById("messages-row");
 
-function renderEachmsg(each) {
+function renderEachmsg(each, belongsToUser) {
+  console.log(each);
   const divEl = document.createElement("div");
-  divEl.textContent = each.message;
-  divEl.className = "message sent";
+  if (belongsToUser == 1) {
+    divEl.className = " message sent";
+  } else {
+    const pEl = document.createElement("span");
+    pEl.className = "name";
+    pEl.textContent = each.user.name;
+    divEl.appendChild(pEl);
+    divEl.className = "message received";
+  }
+  const pEl2 = document.createElement("span");
+  pEl2.textContent = each.message;
+  divEl.appendChild(pEl2);
   const spanParent = document.createElement("span");
   spanParent.className = "metadata";
   const spanChild = document.createElement("span");
@@ -33,7 +44,7 @@ async function postNewMsg(e) {
       msg: messageEl.value,
     };
     const response = await axiosInstance.post("/msg/new-msg", newMsg);
-    renderEachmsg(response.data.msg);
+    renderEachmsg(response.data.msg, 1);
     messageEl.value = "";
   } catch (err) {
     console.error(err);
@@ -43,9 +54,10 @@ async function postNewMsg(e) {
 
 async function getAllMsgs() {
   try {
+    msgRow.innerHTML = "";
     const response = await axiosInstance.get("/msg/get-all-msg");
     response.data.msg.forEach((each) => {
-      renderEachmsg(each);
+      renderEachmsg(each, each.belongsToUser);
     });
   } catch (err) {
     console.error(err);
@@ -55,3 +67,6 @@ async function getAllMsgs() {
 
 formEl.addEventListener("submit", postNewMsg);
 window.addEventListener("DOMContentLoaded", getAllMsgs);
+// setInterval(() => {
+//   getAllMsgs();
+// }, 1000);

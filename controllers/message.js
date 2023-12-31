@@ -1,3 +1,7 @@
+const Sequelize = require("sequelize");
+
+const Message = require("../models/message");
+const User = require("../models/user");
 function isStringInValid(string) {
   if (!string || string.length === 0) {
     return true;
@@ -26,9 +30,30 @@ exports.postNewMsg = async (req, res, next) => {
 
 exports.getAllMsg = async (req, res, next) => {
   try {
-    const response = await req.user.getMessages({
-      attributes: ["id", "message", "time"],
+    // const response = await req.user.getMessages({
+    //   attributes: ["id", "message", "time"],
+    // });
+
+    const response = await Message.findAll({
+      attributes: [
+        "id",
+        "message",
+        "time",
+        [
+          Sequelize.literal(
+            `(CASE WHEN userId = ${req.user.id} THEN true ELSE false END)`
+          ),
+          "belongsToUser",
+        ],
+      ],
+      include: [
+        {
+          model: User,
+          attributes: ["name"],
+        },
+      ],
     });
+
     res.status(200).json({ success: true, msg: response });
   } catch (err) {
     console.error(err);

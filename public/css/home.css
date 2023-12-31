@@ -27,6 +27,8 @@
 .middle-container {
   height: 84vh;
   overflow-y: auto;
+  display: flex;
+  justify-content: center;
 }
 
 .bottom-cont {
@@ -44,6 +46,9 @@
   border-radius: 5px;
   font-weight: bold;
 }
+#messages-row {
+  width: 90vw;
+}
 .message {
   color: #000;
   clear: both;
@@ -52,14 +57,29 @@
   padding: 8px;
   position: relative;
   margin: 8px 0;
-  max-width: 85%;
+  max-width: 65%;
   word-wrap: break-word;
   z-index: -1;
 }
 .message.sent {
-  background: #e1ffc7;
+  background: white;
   border-radius: 5px 0px 5px 5px;
   float: right;
+}
+
+.message.received {
+  background: #fff;
+  border-radius: 0px 5px 5px 5px;
+  float: left;
+}
+.name {
+  display: block;
+  font-size: 10px;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  margin: 0px 5px 0 0;
+  font-weight: 800;
+  color: #379683;
 }
 
 .metadata {
