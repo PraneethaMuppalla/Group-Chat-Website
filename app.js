@@ -10,7 +10,9 @@ dotenv.config();
 
 const sequelise = require("./util/database");
 const User = require("./models/user");
+const Message = require("./models/message");
 const userRoutes = require("./routes/user");
+const msgRoutes = require("./routes/message");
 
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "access.log"),
@@ -26,6 +28,10 @@ app.use(morgan("combined", { stream: accessLogStream }));
 
 //routes
 app.use("/user", userRoutes);
+app.use("/msg", msgRoutes);
+
+User.hasMany(Message, { constraints: true, onDelete: "CASCADE" });
+Message.belongsTo(User);
 
 sequelise
   .sync()
