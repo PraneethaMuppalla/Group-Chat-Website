@@ -1,6 +1,9 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../util/database");
 const currentDate = new Date();
+const istDateString = currentDate.toLocaleString("en-IN", {
+  timeZone: "Asia/Kolkata",
+});
 
 const Message = sequelize.define("message", {
   id: {
@@ -14,8 +17,8 @@ const Message = sequelize.define("message", {
     allowNull: false,
   },
   time: {
-    type: Sequelize.DATE,
-    defaultValue: Sequelize.NOW,
+    type: Sequelize.STRING,
+    defaultValue: istDateString,
     allowNull: false,
   },
 });

@@ -24,6 +24,11 @@
   font-weight: 800;
   color: white;
 }
+.middle-container {
+  height: 84vh;
+  overflow-y: auto;
+}
+
 .bottom-cont {
   height: 8vh;
   background-color: #195088;
@@ -38,4 +43,35 @@
   padding: 5px 20px;
   border-radius: 5px;
   font-weight: bold;
+}
+.message {
+  color: #000;
+  clear: both;
+  line-height: 18px;
+  font-size: 15px;
+  padding: 8px;
+  position: relative;
+  margin: 8px 0;
+  max-width: 85%;
+  word-wrap: break-word;
+  z-index: -1;
+}
+.message.sent {
+  background: #e1ffc7;
+  border-radius: 5px 0px 5px 5px;
+  float: right;
+}
+
+.metadata {
+  display: inline-block;
+  float: right;
+  padding: 0 0 0 7px;
+  position: relative;
+  bottom: -4px;
+}
+
+.metadata .time {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+  display: inline-block;
 }
