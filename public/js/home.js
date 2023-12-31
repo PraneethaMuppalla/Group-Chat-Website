@@ -21,4 +21,15 @@ async function postNewMsg(e) {
   }
 }
 
+async function getAllMsgs() {
+  try {
+    const response = await axiosInstance.get("/msg/get-all-msg");
+    console.log(response.data.msg);
+  } catch (err) {
+    console.error(err);
+    alert("Some error occured. We can't fetch messages right now.");
+  }
+}
+
 formEl.addEventListener("submit", postNewMsg);
+window.addEventListener("DOMContentLoaded", getAllMsgs);
