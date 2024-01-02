@@ -13,7 +13,7 @@ function isStringInValid(string) {
 
 exports.postNewMsg = async (req, res, next) => {
   try {
-    const { msg } = req.body;
+    const { msg, groupId } = req.body;
     if (isStringInValid(msg)) {
       return res
         .status(401)
@@ -21,6 +21,7 @@ exports.postNewMsg = async (req, res, next) => {
     }
     const response = await req.user.createMessage({
       message: msg,
+      groupId,
     });
     res.status(201).json({ success: true, msg: response });
   } catch (err) {
@@ -31,10 +32,18 @@ exports.postNewMsg = async (req, res, next) => {
 
 exports.getAllMsg = async (req, res, next) => {
   try {
-    let lastMsgId = +req.query.lastMsgId || null;
-    let count = await Message.count();
-    if (lastMsgId === null || lastMsgId < count - 10) {
-      lastMsgId = count - 10;
+    let groupId = +req.query.groupId || null;
+    if (!groupId) {
+      return res
+        .status(400)
+        .json({ success: true, msg: "Group Id can't be null" });
+    }
+    let count = await Message.count({
+      where: { groupId },
+    });
+    let offsetNow = 0;
+    if (count > 10) {
+      offsetNow = count - 10;
     }
     const response = await Message.findAll({
       attributes: [
@@ -55,10 +64,10 @@ exports.getAllMsg = async (req, res, next) => {
         },
       ],
       where: {
-        id: {
-          [Op.gt]: lastMsgId,
-        },
+        groupId,
       },
+      offset: offsetNow,
+      limit: 10,
     });
 
     res.status(200).json({ success: true, msg: response });

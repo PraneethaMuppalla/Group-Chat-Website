@@ -6,7 +6,7 @@
   font-family: "Montserrat", sans-serif;
   padding: 0;
   margin: 0;
-  background-color: #edf5e1;
+  background-color: white;
 }
 
 .top-nav-bar {
@@ -14,6 +14,7 @@
   background-color: #379683;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding-left: 5%;
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.1);
 }
@@ -24,11 +25,36 @@
   font-weight: 800;
   color: white;
 }
+
+.grp-heading {
+  font-family: cursive;
+  font-size: 25px;
+  padding: 5px;
+  font-weight: 800;
+  color: #379683;
+}
+
+.modal-header-bg {
+  background-color: #379683;
+  color: white;
+}
 .middle-container {
   height: 84vh;
   overflow-y: auto;
   display: flex;
   justify-content: center;
+}
+#groups-cont {
+  width: 30vw;
+  border-right: 3px solid #379683;
+  border-radius: 0 15px 15px 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+#messages-row {
+  width: 70vw;
+  padding: 20px;
 }
 
 .bottom-cont {
@@ -46,9 +72,25 @@
   border-radius: 5px;
   font-weight: bold;
 }
-#messages-row {
-  width: 90vw;
+.button-group {
+  background-color: white;
+  color: #379683;
+  border: 2px solid #379683;
+  margin: 5px;
+  padding: 10px;
+  text-align: left;
+  border-radius: 5px;
+  font-weight: bold;
 }
+.button-bg {
+  background-color: #195088;
+  color: white;
+  border: none;
+  font-weight: 500;
+  border-radius: 5px;
+  padding: 5px 20px;
+}
+
 .message {
   color: #000;
   clear: both;
@@ -57,18 +99,18 @@
   padding: 8px;
   position: relative;
   margin: 8px 0;
-  max-width: 65%;
+  max-width: 50%;
   word-wrap: break-word;
   z-index: -1;
 }
 .message.sent {
-  background: white;
+  background: #edf5e1;
   border-radius: 5px 0px 5px 5px;
   float: right;
 }
 
 .message.received {
-  background: #fff;
+  background: #edf5e1;
   border-radius: 0px 5px 5px 5px;
   float: left;
 }
@@ -94,4 +136,48 @@
   color: rgba(0, 0, 0, 0.45);
   font-size: 11px;
   display: inline-block;
+}
+.top-div-El {
+  border-bottom: 2px solid #195088;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+.no-button {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid black;
+}
+.error-msg {
+  color: red;
+  margin: 5px;
+
+  font-weight: 700;
+  font-size: 15px;
+}
+.strongEl {
+  color: #379683;
+}
+.success-cont {
+  min-width: 50%;
+  border: 2px solid #379683;
+  margin-top: 10px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: space-between;
+}
+.no-group-cont {
+  margin-top: 15%;
+  border: 2px solid #195088;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.no-group-heading {
+  text-align: center;
+  font-size: 25px;
+  font-weight: 500;
+  color: rgb(203, 42, 42);
 }
