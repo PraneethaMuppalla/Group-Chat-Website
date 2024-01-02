@@ -139,3 +139,34 @@ exports.joinMemToCommonGroup = async (req, res, next) => {
     res.status(500).json({ success: false, msg: err });
   }
 };
+
+exports.getUsersOfGroup = async (req, res, next) => {
+  try {
+    const groupId = req.query.groupId;
+    if (!groupId) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Bad request. Parameters are wrong." });
+    }
+    const response = await Group.findByPk(groupId, {
+      attributes: [],
+      include: [
+        {
+          model: User,
+          attributes: ["id", "name"],
+          through: {
+            attributes: ["isAdmin"],
+          },
+        },
+      ],
+    });
+    if (response) {
+      return res.json(response.users);
+    } else {
+      return res.status(404).json({ msg: "Group not find" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: "Some error occured" });
+  }
+};

@@ -9,5 +9,6 @@ router.get("/get-groups-user", authUser, GroupController.getGroupsOfUser);
 router.post("/get-Num-Data", authUser, GroupController.getNumData);
 router.post("/post-mem-grp", authUser, GroupController.addMemToGroup);
 router.get("/join-common-grp", authUser, GroupController.joinMemToCommonGroup);
+router.get("/get-group-members", GroupController.getUsersOfGroup);
 
 module.exports = router;

@@ -50,11 +50,11 @@
   border-radius: 0 15px 15px 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
 }
 #messages-row {
   width: 70vw;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .bottom-cont {
@@ -71,6 +71,16 @@
   padding: 5px 20px;
   border-radius: 5px;
   font-weight: bold;
+}
+
+.sml-button {
+  background-color: white;
+  color: #379683;
+  border: 2px solid #379683;
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: 5px;
+  padding: 5px 5px;
 }
 .button-group {
   background-color: white;
@@ -89,6 +99,16 @@
   font-weight: 500;
   border-radius: 5px;
   padding: 5px 20px;
+}
+
+.small-btn {
+  background-color: #195088;
+  color: white;
+  border: none;
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: 5px;
+  padding: 5px 5px;
 }
 
 .message {
@@ -166,6 +186,15 @@
   display: flex;
   justify-content: space-between;
 }
+.modal-name-cont {
+  min-width: 50%;
+
+  margin-top: 10px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: space-between;
+}
+
 .no-group-cont {
   margin-top: 15%;
   border: 2px solid #195088;

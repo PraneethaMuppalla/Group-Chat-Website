@@ -7,12 +7,14 @@ const axiosInstance = axios.create({
 const formEl = document.getElementById("form");
 const messageEl = document.getElementById("msg");
 const msgRow = document.getElementById("messages-row");
+
 const createGroupFormEl = document.getElementById("createGroupForm");
 const groupNameEl = document.getElementById("groupName");
 const closeBtn = document.getElementById("closeBtn");
 const groupsCont = document.getElementById("groups-cont");
 const phoneNumToAddMemEl = document.getElementById("phoneNumToAddMem");
 const nameContentEl = document.getElementById("nameContent");
+const membersRow = document.getElementById("membersRow");
 let currentGroupId;
 
 function renderEachmsg(each, belongsToUser) {
@@ -42,9 +44,55 @@ function renderEachmsg(each, belongsToUser) {
   divEl.appendChild(spanParent);
   msgRow.appendChild(divEl);
 }
+
+function addMemberRow(each) {
+  const successUserEl = document.createElement("div");
+  const strongEl = document.createElement("strong");
+  strongEl.textContent = each.name;
+  strongEl.className = "strongEl";
+  successUserEl.appendChild(strongEl);
+
+  if (each["group-member"].isAdmin) {
+    const buttonEl2 = document.createElement("button");
+    buttonEl2.textContent = "Admin";
+    buttonEl2.className = "no-button";
+    successUserEl.appendChild(buttonEl2);
+  } else {
+    const divElement = document.createElement("div");
+    const buttonEl = document.createElement("button");
+    buttonEl.textContent = "Remove";
+    buttonEl.className = "small-btn";
+    buttonEl.addEventListener("click", () => {
+      deleteMember(response.data.id);
+    });
+    divElement.appendChild(buttonEl);
+    const editButtonEl = document.createElement("button");
+    editButtonEl.textContent = "Make Admin";
+    editButtonEl.className = "button";
+    divElement.appendChild(editButtonEl);
+    successUserEl.appendChild(divElement);
+  }
+
+  successUserEl.className = "modal-name-cont";
+  membersRow.appendChild(successUserEl);
+}
+
+async function adminEditClicked() {
+  try {
+    membersRow.innerHTML = "";
+    const members = await axiosInstance.get(
+      `/grp/get-group-members?groupId=${currentGroupId}`
+    );
+    members.data.forEach((each) => addMemberRow(each));
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 function renderGroupCont(groupId, groupName, isAdmin) {
   msgRow.innerHTML = "";
   const topDivEl = document.createElement("div");
+
   const groupNameCont = document.createElement("div");
   groupNameCont.textContent = groupName;
   groupNameCont.className = "grp-heading";
@@ -52,11 +100,11 @@ function renderGroupCont(groupId, groupName, isAdmin) {
   const adminCont = document.createElement("div");
   if (isAdmin) {
     adminCont.innerHTML = `<div class="dropdown">
-    <button class="button-bg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <button class="button-bg dropdown-toggle" type="button" data-bs-toggle="dropdown"  aria-expanded="false">
       Admin
     </button>
     <ul class="dropdown-menu">
-      <li><button type="button" class="no-button" data-bs-toggle="modal" data-bs-target="#editModal">
+      <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="adminEditClicked()" data-bs-target="#editModal">
       Edit Group
     </button></li>
       <li><button class="no-button">Delete Group</button></li>
