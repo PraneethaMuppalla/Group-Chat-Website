@@ -4,6 +4,14 @@ const axiosInstance = axios.create({
   headers: { Authorization: token },
 });
 
+//socket connection
+const socket = io("http://localhost:3000");
+//msg received
+socket.on("receive msg", (msg, name) => {
+  console.log(msg);
+  renderEachmsg(msg, name, 0);
+});
+
 const formEl = document.getElementById("form");
 const messageEl = document.getElementById("msg");
 const msgRow = document.getElementById("messages-row");
@@ -17,14 +25,14 @@ const nameContentEl = document.getElementById("nameContent");
 const membersRow = document.getElementById("membersRow");
 let currentGroupId;
 
-function renderEachmsg(each, belongsToUser) {
+function renderEachmsg(each, name, belongsToUser = 0) {
   const divEl = document.createElement("div");
   if (belongsToUser == 1) {
     divEl.className = " message sent";
   } else {
     const pEl = document.createElement("span");
     pEl.className = "name";
-    pEl.textContent = each.user.name;
+    pEl.textContent = name;
     divEl.appendChild(pEl);
     divEl.className = "message received";
   }
@@ -43,6 +51,7 @@ function renderEachmsg(each, belongsToUser) {
   spanParent.appendChild(spanChild);
   divEl.appendChild(spanParent);
   msgRow.appendChild(divEl);
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
 function addMemberRow(each) {
@@ -127,6 +136,7 @@ function renderEachGroup(each) {
   buttonEl.id = `name${each.id}`;
   buttonEl.addEventListener("click", () => {
     currentGroupId = each.id;
+    socket.emit("join group", each.id);
     renderGroupCont(each.id, each.name, each["group-member"].isAdmin);
   });
   buttonEl.textContent = each.name;
@@ -144,7 +154,9 @@ async function postNewMsg(e) {
       groupId: currentGroupId,
     };
     const response = await axiosInstance.post("/msg/new-msg", newMsg);
-    renderEachmsg(response.data.msg, 1);
+    const { msg, name } = response.data;
+    socket.emit("new msg", msg, name, currentGroupId);
+    renderEachmsg(msg, name, 1);
     messageEl.value = "";
   } catch (err) {
     console.error(err);
@@ -174,7 +186,7 @@ async function getAllMsgs(groupId) {
       `/msg/get-all-msg?groupId=${groupId}`
     );
     response.data.msg.forEach((each) => {
-      renderEachmsg(each, each.belongsToUser);
+      renderEachmsg(each, each.user.name, each.belongsToUser);
     });
   } catch (err) {
     console.error(err);

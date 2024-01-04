@@ -23,7 +23,7 @@ exports.postNewMsg = async (req, res, next) => {
       message: msg,
       groupId,
     });
-    res.status(201).json({ success: true, msg: response });
+    res.status(201).json({ success: true, msg: response, name: req.user.name });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, msg: err });

@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const { createServer } = require("node:http");
 
+const { Server } = require("socket.io");
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -24,6 +26,7 @@ const accessLogStream = fs.createWriteStream(
 
 //middleware
 const app = express();
+const server = createServer(app);
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
@@ -50,12 +53,38 @@ sequelise
   })
   .then((group) => {
     if (!group) {
-      Group.create({ id: 1, name: "The Chat Hub" });
+      return Group.create({ id: 1, name: "The Chat Hub" });
     }
   })
   .then(() => {
-    app.listen(process.env.PORT || 3000);
+    server.listen(process.env.PORT || 3000);
   })
   .catch((err) => {
     console.error(err);
   });
+
+//new instance of socket.io by passing the server object
+const io = new Server(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: ["http://127.0.0.1:5500", "https://admin.socket.io"],
+    credentials: true,
+  },
+});
+
+//listen on the connection event for incoming sockets and log them to the console
+io.on("connection", (socket) => {
+  //joining group ids room
+  socket.on("join group", (groupId) => {
+    console.log("groupId");
+    socket.join(groupId);
+  });
+  socket.on("new msg", (msgToBeSent, name, currentGroupId) => {
+    if (!currentGroupId) return console.log("nothing to be sent");
+    socket.to(currentGroupId).emit("receive msg", msgToBeSent, name);
+  });
+});
+
+//to connect to admin dashboard
+const { instrument } = require("@socket.io/admin-ui");
+instrument(io, { auth: false });
