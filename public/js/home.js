@@ -19,11 +19,46 @@ const msgRow = document.getElementById("messages-row");
 const createGroupFormEl = document.getElementById("createGroupForm");
 const groupNameEl = document.getElementById("groupName");
 const closeBtn = document.getElementById("closeBtn");
+const uploadImgBtn = document.getElementById("uploadImgBtn");
 const groupsCont = document.getElementById("groups-cont");
 const phoneNumToAddMemEl = document.getElementById("phoneNumToAddMem");
 const nameContentEl = document.getElementById("nameContent");
 const membersRow = document.getElementById("membersRow");
 let currentGroupId;
+const selectedImgEl = document.getElementById("imageSelected");
+const queuedDiv = document.querySelector(".queued-div");
+const queuedForm = document.querySelector("#queued-form");
+let image;
+
+async function uploadImage(e) {
+  try {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("groupId", currentGroupId);
+    console.log(formData);
+    const response = await axiosInstance.post("/msg/upload-img", formData);
+    const { msg, name } = response.data;
+    socket.emit("new msg", msg, name, currentGroupId);
+    renderEachmsg(msg, name, 1);
+  } catch (err) {
+    console.error(err);
+    // alert("Some error occured. Please try again");
+  } finally {
+    uploadImgBtn.click();
+  }
+}
+
+function imageSelected() {
+  queuedForm.className = "d-none";
+  image = selectedImgEl.files[0];
+  if (image) {
+    queuedDiv.innerHTML = `<div class="image">
+      <img src="${URL.createObjectURL(image)}" alt="image">
+    </div>`;
+    queuedForm.className = "d-flex flex-column";
+  }
+}
 
 function renderEachmsg(each, name, belongsToUser = 0) {
   const divEl = document.createElement("div");
@@ -36,9 +71,17 @@ function renderEachmsg(each, name, belongsToUser = 0) {
     divEl.appendChild(pEl);
     divEl.className = "message received";
   }
-  const pEl2 = document.createElement("span");
-  pEl2.textContent = each.message;
-  divEl.appendChild(pEl2);
+  if (!each.isImage) {
+    const pEl2 = document.createElement("span");
+    pEl2.textContent = each.message;
+    divEl.appendChild(pEl2);
+  } else {
+    const imageContainer = document.createElement("img");
+    imageContainer.src = each.message;
+    imageContainer.className = "sent-img";
+
+    divEl.appendChild(imageContainer);
+  }
   const spanParent = document.createElement("span");
   spanParent.className = "metadata";
   const spanChild = document.createElement("span");
@@ -108,7 +151,15 @@ function renderGroupCont(groupId, groupName, isAdmin) {
   topDivEl.appendChild(groupNameCont);
   const adminCont = document.createElement("div");
   if (isAdmin) {
-    adminCont.innerHTML = `<div class="dropdown">
+    adminCont.innerHTML = `<div class="d-flex flex-row ">
+    <button class="me-3 border-less-button" title="UPLOAD IMAGE" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="30" fill="currentColor" class="bi bi-link-45deg " viewBox="0 0 16 16">
+  <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
+  <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
+</svg>
+    </button>
+    <div class="dropdown">
+
     <button class="button-bg dropdown-toggle" type="button" data-bs-toggle="dropdown"  aria-expanded="false">
       Admin
     </button>
@@ -119,9 +170,30 @@ function renderGroupCont(groupId, groupName, isAdmin) {
       <li><button class="no-button">Delete Group</button></li>
      
     </ul>
-  </div>`;
+  </div>
+  </div>
+  `;
   } else {
-    adminCont.innerHTML = "Group Member";
+    adminCont.innerHTML = `<div class="d-flex flex-row ">
+    <button class="me-3 border-less-button" title="UPLOAD IMAGE" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="30" fill="currentColor" class="bi bi-link-45deg " viewBox="0 0 16 16">
+  <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
+  <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
+</svg>
+    </button>
+    <div class="dropdown">
+
+    <button class="button-bg dropdown-toggle" type="button" data-bs-toggle="dropdown"  aria-expanded="false">
+      Admin
+    </button>
+    <ul class="dropdown-menu">
+      <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="adminEditClicked()" data-bs-target="#editModal">
+      View Details
+    </button></li>    
+    </ul>
+  </div>
+  </div>
+  `;
   }
   adminCont.className = "top-div";
   topDivEl.appendChild(adminCont);
@@ -196,6 +268,9 @@ async function getAllMsgs(groupId) {
 
 async function getAllGroupsOfUser() {
   try {
+    groupsCont.innerHTML = "";
+    const headerEl = ` <div class="top-div-El">Groups</div>`;
+    groupsCont.innerHTML += headerEl;
     const response = await axiosInstance.get(`/grp/get-groups-user`);
     if (response.data.length === 0) {
       const divEl = document.createElement("div");
@@ -301,6 +376,7 @@ phoneNumToAddMemEl.addEventListener("change", checkNumber);
 formEl.addEventListener("submit", postNewMsg);
 createGroupFormEl.addEventListener("submit", createNewGrp);
 window.addEventListener("DOMContentLoaded", getAllGroupsOfUser);
+queuedForm.addEventListener("submit", uploadImage);
 
 // setInterval(() => {
 //   getAllMsgs();

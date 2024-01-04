@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
+const MessageSevices = require("../services/message");
 
 const Message = require("../models/message");
 const User = require("../models/user");
@@ -30,6 +31,24 @@ exports.postNewMsg = async (req, res, next) => {
   }
 };
 
+exports.uploadNewImg = async (req, res, next) => {
+  try {
+    const { groupId } = req.body;
+    console.log("object=====>>>>>>");
+    console.log(req.body.groupId);
+    const fileLocation = await MessageSevices.uploadToS3(req);
+    const response = await req.user.createMessage({
+      groupId: groupId,
+      message: fileLocation,
+      isImage: true,
+    });
+    res.status(201).json({ success: true, msg: response, name: req.user.name });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: "Error occured" });
+  }
+};
+
 exports.getAllMsg = async (req, res, next) => {
   try {
     let groupId = +req.query.groupId || null;
@@ -49,6 +68,7 @@ exports.getAllMsg = async (req, res, next) => {
       attributes: [
         ["id", "messageId"],
         "message",
+        "isImage",
         "time",
         [
           Sequelize.literal(

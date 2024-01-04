@@ -21,6 +21,10 @@ const Message = sequelize.define("message", {
     defaultValue: istDateString,
     allowNull: false,
   },
+  isImage: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 module.exports = Message;

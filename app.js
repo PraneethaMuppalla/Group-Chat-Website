@@ -8,6 +8,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+
 dotenv.config();
 
 const sequelise = require("./util/database");
@@ -29,6 +30,7 @@ const app = express();
 const server = createServer(app);
 app.use(cors());
 app.use(express.json());
+
 app.use(helmet());
 app.use(morgan("combined", { stream: accessLogStream }));
 

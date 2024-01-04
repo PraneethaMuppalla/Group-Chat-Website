@@ -26,9 +26,7 @@
       </div>
     </nav>
     <div class="middle-container">
-      <div id="groups-cont" class="p-lg-3 p-3">
-        <div class="top-div-El">Groups</div>
-      </div>
+      <div id="groups-cont" class="p-lg-3 p-3"></div>
       <div id="messages-row"></div>
     </div>
     <div class="container">
@@ -122,6 +120,48 @@
               <div id="membersRow"></div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- upload image modal -->
+    <div
+      class="modal fade"
+      id="uploadImageModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Send Image</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              id="uploadImgBtn"
+            ></button>
+          </div>
+
+          <div class="modal-body d-flex flex-column justify-content-center">
+            <div class="input-div align-self-center">
+              <label for="imageSelected"> Select Image</label>
+              <input
+                onchange="imageSelected()"
+                type="file"
+                class="file"
+                id="imageSelected"
+                accept="image/jpeg, image/png, image/jpg"
+              />
+            </div>
+            <hr />
+            <form id="queued-form" class="d-none">
+              <div class="queued-div"></div>
+              <button type="submit" class="upload-img">Upload</button>
+            </form>
+          </div>
+          <div class="modal-footer"></div>
         </div>
       </div>
     </div>
