@@ -183,8 +183,8 @@ function renderGroupCont(groupId, groupName, isAdmin) {
     </button>
     <div class="dropdown">
 
-    <button class="button-bg dropdown-toggle" type="button" data-bs-toggle="dropdown"  aria-expanded="false">
-      Admin
+    <button class="button dropdown-toggle" type="button" data-bs-toggle="dropdown"  aria-expanded="false">
+      Member
     </button>
     <ul class="dropdown-menu">
       <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="adminEditClicked()" data-bs-target="#editModal">
