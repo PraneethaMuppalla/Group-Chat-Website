@@ -5,7 +5,7 @@ const istDateString = currentDate.toLocaleString("en-IN", {
   timeZone: "Asia/Kolkata",
 });
 
-const Message = sequelize.define("message", {
+const ArchievedMsg = sequelize.define("archieved-msg", {
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -27,4 +27,4 @@ const Message = sequelize.define("message", {
   },
 });
 
-module.exports = Message;
+module.exports = ArchievedMsg;

@@ -34,8 +34,6 @@ exports.postNewMsg = async (req, res, next) => {
 exports.uploadNewImg = async (req, res, next) => {
   try {
     const { groupId } = req.body;
-    console.log("object=====>>>>>>");
-    console.log(req.body.groupId);
     const fileLocation = await MessageSevices.uploadToS3(req);
     const response = await req.user.createMessage({
       groupId: groupId,

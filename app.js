@@ -12,10 +12,12 @@ const morgan = require("morgan");
 dotenv.config();
 
 const sequelise = require("./util/database");
+const CronJob = require("./services/cronJob");
 const User = require("./models/user");
 const Message = require("./models/message");
 const Group = require("./models/group");
 const GroupMember = require("./models/groupMember");
+const ArchievedMsg = require("./models/archieved-msg");
 const userRoutes = require("./routes/user");
 const msgRoutes = require("./routes/message");
 const groupRoutes = require("./routes/group");
@@ -41,12 +43,14 @@ app.use("/grp", groupRoutes);
 
 User.hasMany(Message);
 Message.belongsTo(User);
+ArchievedMsg.belongsTo(User);
 
 User.belongsToMany(Group, { through: GroupMember });
 Group.belongsToMany(User, { through: GroupMember });
 
 Group.hasMany(Message);
 Message.belongsTo(Group);
+ArchievedMsg.belongsTo(Group);
 
 sequelise
   .sync()
