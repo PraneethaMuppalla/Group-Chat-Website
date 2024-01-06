@@ -31,6 +31,10 @@ const queuedForm = document.querySelector("#queued-form");
 let addMemContEl = document.getElementById("addMemCont");
 let image;
 
+function scrollChat() {
+  msgRow.scrollTop = msgRow.scrollHeight;
+}
+
 async function uploadImage(e) {
   try {
     e.preventDefault();
@@ -95,7 +99,7 @@ function renderEachmsg(each, name, belongsToUser = 0) {
   spanParent.appendChild(spanChild);
   divEl.appendChild(spanParent);
   msgRow.appendChild(divEl);
-  window.scrollTo(0, document.body.scrollHeight);
+  scrollChat();
 }
 
 async function deleteMember(id) {
