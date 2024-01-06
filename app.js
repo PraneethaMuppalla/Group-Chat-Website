@@ -18,9 +18,11 @@ const Message = require("./models/message");
 const Group = require("./models/group");
 const GroupMember = require("./models/groupMember");
 const ArchievedMsg = require("./models/archieved-msg");
+const ForgotPw = require("./models/forgotPw");
 const userRoutes = require("./routes/user");
 const msgRoutes = require("./routes/message");
 const groupRoutes = require("./routes/group");
+const forgotPwRoutes = require("./routes/forgotPw");
 
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "access.log"),
@@ -32,6 +34,7 @@ const app = express();
 const server = createServer(app);
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
 app.use(morgan("combined", { stream: accessLogStream }));
@@ -40,6 +43,7 @@ app.use(morgan("combined", { stream: accessLogStream }));
 app.use("/user", userRoutes);
 app.use("/msg", msgRoutes);
 app.use("/grp", groupRoutes);
+app.use("/password", forgotPwRoutes);
 
 User.hasMany(Message);
 Message.belongsTo(User);
@@ -52,6 +56,9 @@ Group.hasMany(Message, { constraints: true, onDelete: "CASCADE" });
 Message.belongsTo(Group);
 Group.hasMany(ArchievedMsg, { constraints: true, onDelete: "CASCADE" });
 ArchievedMsg.belongsTo(Group);
+
+User.hasMany(ForgotPw, { constraints: true, onDelete: "CASCADE" });
+ForgotPw.belongsTo(User);
 
 sequelise
   .sync()
