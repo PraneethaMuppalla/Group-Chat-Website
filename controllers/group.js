@@ -1,3 +1,5 @@
+const { Op } = require("sequelize");
+
 const Group = require("../models/group");
 const User = require("../models/user");
 const GroupMember = require("../models/groupMember");
@@ -100,10 +102,8 @@ exports.addMemToGroup = async (req, res, next) => {
     } else {
       const userModel = await User.findByPk(userId);
       const response = await groupDetails.addUser(userModel);
-      return res.json(response);
+      return res.status(200).json({ user: userModel, response });
     }
-
-    //res.json(groupDetails);
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, msg: err });
@@ -168,5 +168,50 @@ exports.getUsersOfGroup = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ msg: "Some error occured" });
+  }
+};
+
+exports.deleteMemOfGroup = async (req, res, next) => {
+  try {
+    const { groupId, memId } = req.query;
+    if (!groupId || !memId) {
+      return res
+        .status(400)
+        .json({ msg: "Bad request. some parameters missing" });
+    }
+    console.log(groupId, memId);
+    const response = await GroupMember.destroy({
+      where: { [Op.and]: [{ groupId }, { userId: memId }] },
+    });
+    if (response >= 1) {
+      return res.status(200).json({ success: true, msg: "Member deleted" });
+    } else {
+      return res.status(404).json({ msg: "Member not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: err });
+  }
+};
+
+exports.deleteGroup = async (req, res, next) => {
+  try {
+    const { groupId } = req.query;
+    if (!groupId) {
+      return res
+        .status(400)
+        .json({ msg: "Bad request. some parameters missing" });
+    }
+    const response = await Group.destroy({
+      where: { id: groupId },
+    });
+    if (response >= 1) {
+      return res.status(200).json({ success: true, msg: "Group deleted" });
+    } else {
+      return res.status(404).json({ msg: "Group not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: err });
   }
 };

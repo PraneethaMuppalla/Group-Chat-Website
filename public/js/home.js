@@ -28,6 +28,7 @@ let currentGroupId;
 const selectedImgEl = document.getElementById("imageSelected");
 const queuedDiv = document.querySelector(".queued-div");
 const queuedForm = document.querySelector("#queued-form");
+let addMemContEl = document.getElementById("addMemCont");
 let image;
 
 async function uploadImage(e) {
@@ -97,45 +98,92 @@ function renderEachmsg(each, name, belongsToUser = 0) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-function addMemberRow(each) {
+async function deleteMember(id) {
+  try {
+    await axiosInstance.delete(
+      `/grp/delete-mem-from-grp?groupId=${currentGroupId}&memId=${id}`
+    );
+    alert("Member deleted successfully");
+    const indMemRow = document.getElementById(`member${id}`);
+    membersRow.removeChild(indMemRow);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function addMemberRow(each, isAdmin = false, adminView) {
   const successUserEl = document.createElement("div");
+  successUserEl.id = `member${each.id}`;
   const strongEl = document.createElement("strong");
   strongEl.textContent = each.name;
   strongEl.className = "strongEl";
   successUserEl.appendChild(strongEl);
 
-  if (each["group-member"].isAdmin) {
+  if (isAdmin) {
     const buttonEl2 = document.createElement("button");
     buttonEl2.textContent = "Admin";
     buttonEl2.className = "no-button";
     successUserEl.appendChild(buttonEl2);
   } else {
-    const divElement = document.createElement("div");
-    const buttonEl = document.createElement("button");
-    buttonEl.textContent = "Remove";
-    buttonEl.className = "small-btn";
-    buttonEl.addEventListener("click", () => {
-      deleteMember(response.data.id);
-    });
-    divElement.appendChild(buttonEl);
-    const editButtonEl = document.createElement("button");
-    editButtonEl.textContent = "Make Admin";
-    editButtonEl.className = "button";
-    divElement.appendChild(editButtonEl);
-    successUserEl.appendChild(divElement);
+    if (adminView) {
+      const divElement = document.createElement("div");
+      const buttonEl = document.createElement("button");
+      buttonEl.textContent = "Remove";
+      buttonEl.className = "small-btn";
+      buttonEl.addEventListener("click", () => {
+        deleteMember(each.id);
+      });
+      divElement.appendChild(buttonEl);
+      successUserEl.appendChild(divElement);
+    }
   }
-
   successUserEl.className = "modal-name-cont";
   membersRow.appendChild(successUserEl);
 }
 
 async function adminEditClicked() {
   try {
+    addMemContEl.setAttribute(
+      "style",
+      "display: flex; flex-direction: column;"
+    );
     membersRow.innerHTML = "";
     const members = await axiosInstance.get(
       `/grp/get-group-members?groupId=${currentGroupId}`
     );
-    members.data.forEach((each) => addMemberRow(each));
+    members.data.forEach((each) =>
+      addMemberRow(each, each["group-member"].isAdmin, true)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function memberEditClicked() {
+  try {
+    addMemContEl.setAttribute("style", "display: none;");
+    membersRow.innerHTML = "";
+    const members = await axiosInstance.get(
+      `/grp/get-group-members?groupId=${currentGroupId}`
+    );
+    members.data.forEach((each) =>
+      addMemberRow(each, each["group-member"].isAdmin, false)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function deleteGroup(groupId) {
+  try {
+    if (confirm("Are you sure?")) {
+      const members = await axiosInstance.delete(
+        `/grp/delete-group?groupId=${groupId}`
+      );
+      msgRow.innerHTML = "";
+      currentGroupId = null;
+      getAllGroupsOfUser();
+    }
   } catch (err) {
     console.error(err);
   }
@@ -167,7 +215,7 @@ function renderGroupCont(groupId, groupName, isAdmin) {
       <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="adminEditClicked()" data-bs-target="#editModal">
       Edit Group
     </button></li>
-      <li><button class="no-button">Delete Group</button></li>
+      <li><button class="no-button" onclick="deleteGroup(${groupId})" >Delete Group</button></li>
      
     </ul>
   </div>
@@ -187,7 +235,7 @@ function renderGroupCont(groupId, groupName, isAdmin) {
       Member
     </button>
     <ul class="dropdown-menu">
-      <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="adminEditClicked()" data-bs-target="#editModal">
+      <li><button type="button" class="no-button" data-bs-toggle="modal" onclick="memberEditClicked()" data-bs-target="#editModal">
       View Details
     </button></li>    
     </ul>
@@ -308,8 +356,13 @@ async function addMemberToGroup(userId) {
       groupId: currentGroupId,
     };
     const response = await axiosInstance.post("/grp/post-mem-grp", mem);
+    addMemberRow(response.data.user, false, true);
+    nameContentEl.innerHTML = "";
+    phoneNumToAddMemEl.value = "";
   } catch (err) {
     console.error(err);
+    nameContentEl.innerHTML = "";
+    alert("Some error occured");
   }
 }
 

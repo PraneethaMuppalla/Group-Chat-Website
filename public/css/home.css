@@ -271,6 +271,7 @@
 
 .sent-img {
   height: 150px;
+  max-width: 250px;
   overflow: hidden;
   border-radius: 5px;
 }

@@ -48,8 +48,9 @@ ArchievedMsg.belongsTo(User);
 User.belongsToMany(Group, { through: GroupMember });
 Group.belongsToMany(User, { through: GroupMember });
 
-Group.hasMany(Message);
+Group.hasMany(Message, { constraints: true, onDelete: "CASCADE" });
 Message.belongsTo(Group);
+Group.hasMany(ArchievedMsg, { constraints: true, onDelete: "CASCADE" });
 ArchievedMsg.belongsTo(Group);
 
 sequelise
