@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../utils/database");
 
-const Message = sequelize.define("message", {
+const ArchievedMessage = sequelize.define("archieved-message", {
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -12,11 +12,11 @@ const Message = sequelize.define("message", {
     type: Sequelize.TEXT,
   },
   attachmentType: {
-    type: Sequelize.ENUM("IMAGE", "VIDEO"),
+    type: Sequelize.ENUM("image", "video"),
   },
   attachmentUrl: {
     type: Sequelize.STRING,
   },
 });
 
-module.exports = Message;
+module.exports = ArchievedMessage;

@@ -14,7 +14,7 @@ async function submitSignUpForm(e) {
     const newUser = {
       name: nameEl.value,
       email: emailEl.value,
-      phoneNum: phoneNumEl.value,
+      phoneNumber: phoneNumEl.value,
       password: passwordEl.value,
     };
     const response = await axiosInstance.post("/user/sign-up", newUser);

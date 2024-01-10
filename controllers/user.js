@@ -6,86 +6,92 @@ const User = require("../models/user");
 function isStringInValid(string) {
   if (!string || string.length === 0) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 function generateToken(userId) {
   return jwt.sign({ id: userId }, process.env.TOKEN_SECRET);
 }
 
-exports.signUpUser = async (req, res, next) => {
+const signUpUser = async (req, res) => {
   try {
-    const { name, email, phoneNum, password } = req.body;
+    const { name, email, phoneNumber, password } = req.body;
     if (
       isStringInValid(name) ||
       isStringInValid(email) ||
-      isStringInValid(phoneNum) ||
+      isStringInValid(phoneNumber) ||
       isStringInValid(password)
     ) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Bad request. Parameters are missing" });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
-    const users = await User.findAll({
+    const user = await User.findOne({
       where: {
-        [Op.or]: [{ email }, { phoneNum }],
+        [Op.and]: [{ email }, { phoneNumber }],
       },
     });
-    const user = users[0];
     if (user) {
       return res
         .status(409)
-        .json({ success: false, msg: "User already exists. Please login" });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        phoneNum,
-      });
-      return res
-        .status(201)
-        .json({ success: true, msg: "User registration successful." });
+        .json({ success: false, message: "User already exists. Please login" });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const response = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phoneNumber,
+    });
+    return res
+      .status(201)
+      .json({ success: true, message: "User registration successful." });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.loginUser = async (req, res, next) => {
+const loginUser = async (req, res, next) => {
   try {
-    const { phoneNum, password } = req.body;
-    if (isStringInValid(phoneNum) || isStringInValid(password)) {
-      return res.status(400).json({ success: false, err: "Bad parameters" });
+    const { phoneNumber, password } = req.body;
+    if (isStringInValid(phoneNumber) || isStringInValid(password)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
-    const users = await User.findAll({
-      where: { phoneNum },
+    const user = await User.findOne({
+      where: { phoneNumber },
     });
-    const user = users[0];
     if (!user) {
       //user not registered
-      return res.status(404).json({ success: false, msg: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       //unauthorized
-      return res
-        .status(401)
-        .json({ success: false, msg: "Phone Number or password is incorrect" });
-    } else {
-      const token = generateToken(user.id);
-      return res.status(200).json({
-        success: true,
-        msg: "Successful Login",
-        token,
+      return res.status(401).json({
+        success: false,
+        message: "Phone Number or password is incorrect",
       });
     }
+    const token = generateToken(user.id);
+    return res.status(200).json({
+      success: true,
+      message: "Successful Login",
+      token,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
+
+module.exports = { signUpUser, loginUser };

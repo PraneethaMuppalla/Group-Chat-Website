@@ -7,16 +7,16 @@ const storage = multer.memoryStorage();
 //makes sure that image is always stored in memory and not in disk
 const upload = multer({ storage: storage });
 
-const msgController = require("../controllers/message");
-const authUser = require("../middleware/auth");
+const messageController = require("../controllers/message");
+const authUser = require("../middlewares/auth");
 
-router.post("/new-msg", authUser, msgController.postNewMsg);
-router.get("/get-all-msg", authUser, msgController.getAllMsg);
+router.post("/new-message", authUser, messageController.postNewMessage);
+router.get("/get-all-messages", authUser, messageController.getAllMessages);
 router.post(
-  "/upload-img",
+  "/upload-image",
   authUser,
   upload.single("image"),
-  msgController.uploadNewImg
+  messageController.uploadNewImage
 );
 
 module.exports = router;

@@ -1,8 +1,8 @@
 const Sequelize = require("sequelize");
 
-const sequelise = require("../util/database");
+const sequelise = require("../utils/database");
 
-const forgotPw = sequelise.define("forgotPw", {
+const forgotPassword = sequelise.define("forgot-password", {
   id: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -14,4 +14,4 @@ const forgotPw = sequelise.define("forgotPw", {
   },
 });
 
-module.exports = forgotPw;
+module.exports = forgotPassword;

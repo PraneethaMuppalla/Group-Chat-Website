@@ -6,15 +6,15 @@ const axiosInstance = axios.create({
 
 //socket connection
 const socket = io("http://localhost:3000");
-//msg received
-socket.on("receive msg", (msg, name) => {
-  console.log(msg);
-  renderEachmsg(msg, name, 0);
+//message received
+socket.on("receive message", (message, name) => {
+  console.log(message);
+  renderEachmessage(message, name, 0);
 });
 
 const formEl = document.getElementById("form");
-const messageEl = document.getElementById("msg");
-const msgRow = document.getElementById("messages-row");
+const messageEl = document.getElementById("message");
+const messageRow = document.getElementById("messages-row");
 
 const createGroupFormEl = document.getElementById("createGroupForm");
 const groupNameEl = document.getElementById("groupName");
@@ -32,7 +32,7 @@ let addMemContEl = document.getElementById("addMemCont");
 let image;
 
 function scrollChat() {
-  msgRow.scrollTop = msgRow.scrollHeight;
+  messageRow.scrollTop = messageRow.scrollHeight;
 }
 
 async function uploadImage(e) {
@@ -42,10 +42,13 @@ async function uploadImage(e) {
     formData.append("image", image);
     formData.append("groupId", currentGroupId);
     console.log(formData);
-    const response = await axiosInstance.post("/msg/upload-img", formData);
-    const { msg, name } = response.data;
-    socket.emit("new msg", msg, name, currentGroupId);
-    renderEachmsg(msg, name, 1);
+    const response = await axiosInstance.post(
+      "/message/upload-image",
+      formData
+    );
+    const { message, name } = response.data;
+    socket.emit("new message", message, name, currentGroupId);
+    renderEachmessage(message, name, 1);
   } catch (err) {
     console.error(err);
     // alert("Some error occured. Please try again");
@@ -65,7 +68,7 @@ function imageSelected() {
   }
 }
 
-function renderEachmsg(each, name, belongsToUser = 0) {
+function renderEachmessage(each, name, belongsToUser = 0) {
   const divEl = document.createElement("div");
   if (belongsToUser == 1) {
     divEl.className = " message sent";
@@ -76,36 +79,43 @@ function renderEachmsg(each, name, belongsToUser = 0) {
     divEl.appendChild(pEl);
     divEl.className = "message received";
   }
-  if (!each.isImage) {
+  if (!each.attachmentType) {
     const pEl2 = document.createElement("span");
-    pEl2.textContent = each.message;
+    pEl2.textContent = each.text;
     divEl.appendChild(pEl2);
   } else {
     const imageContainer = document.createElement("img");
-    imageContainer.src = each.message;
+    imageContainer.src = each.attachmentUrl;
     imageContainer.className = "sent-img";
-
     divEl.appendChild(imageContainer);
   }
   const spanParent = document.createElement("span");
   spanParent.className = "metadata";
   const spanChild = document.createElement("span");
-  const parts = each.time.split(/[/, ,: ]+/);
-  const [day, month, year, hour, minute, second, period] = parts;
+  const dateObject = new Date(each.createdAt);
+  console.log(dateObject);
+
+  // Extract components from the date object
+  const day = dateObject.getDate();
+  let hour = dateObject.getHours();
+  const minute = dateObject.getMinutes();
+  const period = hour >= 12 ? "PM" : "AM";
   const convertedHour = hour % 12 || 12;
   const convertedTime = `${convertedHour}:${minute} ${period}`;
+
+  console.log(convertedTime);
   spanChild.textContent = convertedTime;
   spanChild.className = "time";
   spanParent.appendChild(spanChild);
   divEl.appendChild(spanParent);
-  msgRow.appendChild(divEl);
+  messageRow.appendChild(divEl);
   scrollChat();
 }
 
 async function deleteMember(id) {
   try {
     await axiosInstance.delete(
-      `/grp/delete-mem-from-grp?groupId=${currentGroupId}&memId=${id}`
+      `/group/delete-member-from-group?groupId=${currentGroupId}&userId=${id}`
     );
     alert("Member deleted successfully");
     const indMemRow = document.getElementById(`member${id}`);
@@ -153,7 +163,7 @@ async function adminEditClicked() {
     );
     membersRow.innerHTML = "";
     const members = await axiosInstance.get(
-      `/grp/get-group-members?groupId=${currentGroupId}`
+      `/group/get-all-group-members?groupId=${currentGroupId}`
     );
     members.data.forEach((each) =>
       addMemberRow(each, each["group-member"].isAdmin, true)
@@ -168,7 +178,7 @@ async function memberEditClicked() {
     addMemContEl.setAttribute("style", "display: none;");
     membersRow.innerHTML = "";
     const members = await axiosInstance.get(
-      `/grp/get-group-members?groupId=${currentGroupId}`
+      `/group/get-group-members?groupId=${currentGroupId}`
     );
     members.data.forEach((each) =>
       addMemberRow(each, each["group-member"].isAdmin, false)
@@ -182,9 +192,9 @@ async function deleteGroup(groupId) {
   try {
     if (confirm("Are you sure?")) {
       const members = await axiosInstance.delete(
-        `/grp/delete-group?groupId=${groupId}`
+        `/group/delete-group?groupId=${groupId}`
       );
-      msgRow.innerHTML = "";
+      messageRow.innerHTML = "";
       currentGroupId = null;
       getAllGroupsOfUser();
     }
@@ -194,12 +204,12 @@ async function deleteGroup(groupId) {
 }
 
 function renderGroupCont(groupId, groupName, isAdmin) {
-  msgRow.innerHTML = "";
+  messageRow.innerHTML = "";
   const topDivEl = document.createElement("div");
 
   const groupNameCont = document.createElement("div");
   groupNameCont.textContent = groupName;
-  groupNameCont.className = "grp-heading";
+  groupNameCont.className = "group-heading";
   topDivEl.appendChild(groupNameCont);
   const adminCont = document.createElement("div");
   if (isAdmin) {
@@ -250,8 +260,8 @@ function renderGroupCont(groupId, groupName, isAdmin) {
   adminCont.className = "top-div";
   topDivEl.appendChild(adminCont);
   topDivEl.className = "top-div-El";
-  msgRow.appendChild(topDivEl);
-  getAllMsgs(groupId);
+  messageRow.appendChild(topDivEl);
+  getAllmessages(groupId);
 }
 
 function renderEachGroup(each) {
@@ -267,20 +277,20 @@ function renderEachGroup(each) {
   groupsCont.appendChild(buttonEl);
 }
 
-async function postNewMsg(e) {
+async function postNewmessage(e) {
   try {
     e.preventDefault();
     if (!currentGroupId) {
       return alert("Please select a group");
     }
-    const newMsg = {
-      msg: messageEl.value,
+    const newText = {
+      text: messageEl.value,
       groupId: currentGroupId,
     };
-    const response = await axiosInstance.post("/msg/new-msg", newMsg);
-    const { msg, name } = response.data;
-    socket.emit("new msg", msg, name, currentGroupId);
-    renderEachmsg(msg, name, 1);
+    const response = await axiosInstance.post("/message/new-message", newText);
+    const { message, name } = response.data;
+    socket.emit("new message", message, name, currentGroupId);
+    renderEachmessage(message, name, 1);
     messageEl.value = "";
   } catch (err) {
     console.error(err);
@@ -288,13 +298,16 @@ async function postNewMsg(e) {
   }
 }
 
-async function createNewGrp(e) {
+async function createNewgroup(e) {
   try {
     e.preventDefault();
     let newGroup = {
       groupName: groupNameEl.value,
     };
-    const response = await axiosInstance.post("/grp/create-new-grp", newGroup);
+    const response = await axiosInstance.post(
+      "/group/create-new-group",
+      newGroup
+    );
     closeBtn.click();
     alert("Group created");
     getAllGroupsOfUser();
@@ -304,13 +317,13 @@ async function createNewGrp(e) {
   }
 }
 
-async function getAllMsgs(groupId) {
+async function getAllmessages(groupId) {
   try {
     const response = await axiosInstance.get(
-      `/msg/get-all-msg?groupId=${groupId}`
+      `/message/get-all-messages?groupId=${groupId}`
     );
-    response.data.msg.forEach((each) => {
-      renderEachmsg(each, each.user.name, each.belongsToUser);
+    response.data.message.forEach((each) => {
+      renderEachmessage(each, each.user.name, each.belongsToUser);
     });
   } catch (err) {
     console.error(err);
@@ -323,8 +336,8 @@ async function getAllGroupsOfUser() {
     groupsCont.innerHTML = "";
     const headerEl = ` <div class="top-div-El">Groups</div>`;
     groupsCont.innerHTML += headerEl;
-    const response = await axiosInstance.get(`/grp/get-groups-user`);
-    if (response.data.length === 0) {
+    const response = await axiosInstance.get(`/group/get-user-groups`);
+    if (response.data.groups.length === 0) {
       const divEl = document.createElement("div");
       divEl.className = "no-group-cont";
       const h1El = document.createElement("h3");
@@ -338,12 +351,12 @@ async function getAllGroupsOfUser() {
       buttonEl.addEventListener("click", joinCommonGroup);
       divEl.appendChild(h1El);
       divEl.appendChild(buttonEl);
-      msgRow.appendChild(divEl);
+      messageRow.appendChild(divEl);
       groupsCont.setAttribute("style", "display: none;");
     } else {
-      msgRow.innerHTML = "";
+      messageRow.innerHTML = "";
       groupsCont.removeAttribute("style");
-      response.data.forEach((each) => {
+      response.data.groups.forEach((each) => {
         renderEachGroup(each);
       });
     }
@@ -359,7 +372,10 @@ async function addMemberToGroup(userId) {
       userId,
       groupId: currentGroupId,
     };
-    const response = await axiosInstance.post("/grp/post-mem-grp", mem);
+    const response = await axiosInstance.post(
+      "/group/add-member-to-group",
+      mem
+    );
     addMemberRow(response.data.user, false, true);
     nameContentEl.innerHTML = "";
     phoneNumToAddMemEl.value = "";
@@ -372,7 +388,7 @@ async function addMemberToGroup(userId) {
 
 async function joinCommonGroup(userId) {
   try {
-    const response = await axiosInstance.get("/grp/join-common-grp");
+    const response = await axiosInstance.post("/group/join-common-group");
     getAllGroupsOfUser();
   } catch (err) {
     console.error(err);
@@ -383,24 +399,25 @@ async function joinCommonGroup(userId) {
 async function checkNumber(e) {
   try {
     nameContentEl.innerHTML = "";
-    const phoneNum = phoneNumToAddMemEl.value;
-    if (phoneNum.length === 10) {
+    const phoneNumber = phoneNumToAddMemEl.value;
+    if (phoneNumber.length === 10) {
       const phoneNumCheck = {
-        phoneNum,
+        phoneNumber,
       };
+      console.log("HIT=========>>>>>>>>>");
       const response = await axiosInstance.post(
-        "/grp/get-Num-Data",
+        "/group/get-user-data-from-phone-number",
         phoneNumCheck
       );
       const successUserEl = document.createElement("div");
       const strongEl = document.createElement("strong");
-      strongEl.textContent = response.data.name;
+      strongEl.textContent = response.data.user.name;
       strongEl.className = "strongEl";
       const buttonEl = document.createElement("button");
       buttonEl.textContent = "Tap to add";
       buttonEl.className = "no-button";
       buttonEl.addEventListener("click", () => {
-        addMemberToGroup(response.data.id);
+        addMemberToGroup(response.data.user.id);
       });
       successUserEl.appendChild(strongEl);
       successUserEl.appendChild(buttonEl);
@@ -409,32 +426,33 @@ async function checkNumber(e) {
     } else {
       const numberDoesntExistEl = document.createElement("div");
       numberDoesntExistEl.textContent = "*User with this number doesn't exist";
-      numberDoesntExistEl.className = "error-msg";
+      numberDoesntExistEl.className = "error-message";
       nameContentEl.appendChild(numberDoesntExistEl);
     }
   } catch (err) {
     if (err.response && err.response.status === 409) {
       const selfUserEl = document.createElement("div");
       selfUserEl.textContent = "*You can't add yourself";
-      selfUserEl.className = "error-msg";
+      selfUserEl.className = "error-message";
       nameContentEl.appendChild(selfUserEl);
     } else if (err.response && err.response.status === 404) {
       const numberDoesntExistEl = document.createElement("div");
       numberDoesntExistEl.textContent = "*User with this number doesn't exist";
-      numberDoesntExistEl.className = "error-msg";
+      numberDoesntExistEl.className = "error-message";
       nameContentEl.appendChild(numberDoesntExistEl);
     } else {
+      console.error(err);
       alert("Some error occured. Please try again.");
     }
   }
 }
 
 phoneNumToAddMemEl.addEventListener("change", checkNumber);
-formEl.addEventListener("submit", postNewMsg);
-createGroupFormEl.addEventListener("submit", createNewGrp);
+formEl.addEventListener("submit", postNewmessage);
+createGroupFormEl.addEventListener("submit", createNewgroup);
 window.addEventListener("DOMContentLoaded", getAllGroupsOfUser);
 queuedForm.addEventListener("submit", uploadImage);
 
 // setInterval(() => {
-//   getAllMsgs();
+//   getAllmessages();
 // }, 1000);

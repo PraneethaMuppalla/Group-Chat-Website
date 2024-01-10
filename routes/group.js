@@ -2,19 +2,25 @@ const express = require("express");
 const router = express.Router();
 
 const GroupController = require("../controllers/group");
-const authUser = require("../middleware/auth");
+const authUser = require("../middlewares/auth");
 
-router.post("/create-new-grp", authUser, GroupController.createNewGroup);
-router.get("/get-groups-user", authUser, GroupController.getGroupsOfUser);
-router.post("/get-Num-Data", authUser, GroupController.getNumData);
-router.post("/post-mem-grp", authUser, GroupController.addMemToGroup);
-router.get("/join-common-grp", authUser, GroupController.joinMemToCommonGroup);
-router.get("/get-group-members", authUser, GroupController.getUsersOfGroup);
-router.delete(
-  "/delete-mem-from-grp",
+router.post("/create-new-group", authUser, GroupController.createNewGroup);
+router.get("/get-user-groups", authUser, GroupController.getGroupsOfUser);
+router.post("/add-member-to-group", authUser, GroupController.addMemberToGroup);
+router.post(
+  "/join-common-group",
   authUser,
-  GroupController.deleteMemOfGroup
+  GroupController.addMemberToCommonGroup
 );
-router.delete("/delete-group", authUser, GroupController.deleteGroup);
-
+router.get("/get-all-group-members", authUser, GroupController.getUsersOfGroup);
+router.delete(
+  "/delete-member-from-group",
+  authUser,
+  GroupController.removeMemberFromGroup
+);
+router.post(
+  "/get-user-data-from-phone-number",
+  authUser,
+  GroupController.getUserDataBasedOnPhoneNumber
+);
 module.exports = router;

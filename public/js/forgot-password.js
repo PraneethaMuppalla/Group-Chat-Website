@@ -11,7 +11,7 @@ async function submitForm(e) {
       email: emailEl.value,
     };
     const response = await axiosInstance.post(
-      "/password/forgotpassword",
+      "/password/forgot-passwords",
       email
     );
     emailEl.value = "";

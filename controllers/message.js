@@ -7,70 +7,79 @@ const User = require("../models/user");
 function isStringInValid(string) {
   if (!string || string.length === 0) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
-exports.postNewMsg = async (req, res, next) => {
+const postNewMessage = async (req, res, next) => {
   try {
-    const { msg, groupId } = req.body;
-    if (isStringInValid(msg)) {
-      return res
-        .status(401)
-        .json({ success: false, msg: "Bad request. Parameters are missing" });
+    const { text, groupId } = req.body;
+    if (isStringInValid(text) || isStringInValid(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
     const response = await req.user.createMessage({
-      message: msg,
+      text,
       groupId,
     });
-    res.status(201).json({ success: true, msg: response, name: req.user.name });
+    res
+      .status(201)
+      .json({ success: true, message: response, name: req.user.name });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.uploadNewImg = async (req, res, next) => {
+const uploadNewImage = async (req, res, next) => {
   try {
     const { groupId } = req.body;
+    if (isStringInValid(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
+    }
     const fileLocation = await MessageSevices.uploadToS3(req);
     const response = await req.user.createMessage({
-      groupId: groupId,
-      message: fileLocation,
-      isImage: true,
+      groupId,
+      attachmentUrl: fileLocation,
+      attachmentType: "image",
     });
-    res.status(201).json({ success: true, msg: response, name: req.user.name });
+    res
+      .status(201)
+      .json({ success: true, message: response, name: req.user.name });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: "Error occured" });
+    res.status(500).json({ success: false, message: "Error occured" });
   }
 };
 
-exports.getAllMsg = async (req, res, next) => {
+const getAllMessages = async (req, res, next) => {
   try {
     let groupId = +req.query.groupId || null;
     if (!groupId) {
-      return res
-        .status(400)
-        .json({ success: true, msg: "Group Id can't be null" });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
-    let count = await Message.count({
-      where: { groupId },
-    });
-    let offsetNow = 0;
-    if (count > 10) {
-      offsetNow = count - 10;
-    }
+
     const response = await Message.findAll({
       attributes: [
         ["id", "messageId"],
-        "message",
-        "isImage",
-        "time",
+        "text",
+        "attachmentType",
+        "attachmentUrl",
+        "createdAt",
         [
           Sequelize.literal(
-            `(CASE WHEN userId = ${req.user.id} THEN true ELSE false END)`
+            `(CASE WHEN senderId = ${req.user.id} THEN true ELSE false END)`
           ),
           "belongsToUser",
         ],
@@ -84,13 +93,13 @@ exports.getAllMsg = async (req, res, next) => {
       where: {
         groupId,
       },
-      offset: offsetNow,
-      limit: 10,
     });
 
-    res.status(200).json({ success: true, msg: response });
+    res.status(200).json({ success: true, message: response });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
+
+module.exports = { postNewMessage, uploadNewImage, getAllMessages };

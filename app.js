@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { createServer } = require("node:http");
+const http = require("http");
 
 const { Server } = require("socket.io");
 const express = require("express");
@@ -11,18 +11,18 @@ const morgan = require("morgan");
 
 dotenv.config();
 
-const sequelise = require("./util/database");
-const CronJob = require("./services/cronJob");
+const sequelise = require("./utils/database");
+const CronJob = require("./services/cron-job");
 const User = require("./models/user");
 const Message = require("./models/message");
 const Group = require("./models/group");
-const GroupMember = require("./models/groupMember");
-const ArchievedMsg = require("./models/archieved-msg");
-const ForgotPw = require("./models/forgotPw");
+const GroupMember = require("./models/group-member");
+const ArchievedMessage = require("./models/archieved-message");
+const ForgotPassword = require("./models/forgot-password");
 const userRoutes = require("./routes/user");
-const msgRoutes = require("./routes/message");
+const messageRoutes = require("./routes/message");
 const groupRoutes = require("./routes/group");
-const forgotPwRoutes = require("./routes/forgotPw");
+const forgotPasswordRoutes = require("./routes/forgot-password");
 
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "access.log"),
@@ -31,7 +31,7 @@ const accessLogStream = fs.createWriteStream(
 
 //middleware
 const app = express();
-const server = createServer(app);
+const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,24 +41,24 @@ app.use(morgan("combined", { stream: accessLogStream }));
 
 //routes
 app.use("/user", userRoutes);
-app.use("/msg", msgRoutes);
-app.use("/grp", groupRoutes);
-app.use("/password", forgotPwRoutes);
+app.use("/message", messageRoutes);
+app.use("/group", groupRoutes);
+app.use("/password", forgotPasswordRoutes);
 
-User.hasMany(Message);
-Message.belongsTo(User);
-ArchievedMsg.belongsTo(User);
+User.hasMany(Message, { foreignKey: "senderId" });
+Message.belongsTo(User, { foreignKey: "senderId" });
+ArchievedMessage.belongsTo(User, { foreignKey: "senderId" });
 
-User.belongsToMany(Group, { through: GroupMember });
-Group.belongsToMany(User, { through: GroupMember });
+User.belongsToMany(Group, { through: GroupMember, foreignKey: "userId" });
+Group.belongsToMany(User, { through: GroupMember, foreignKey: "groupId" });
 
-Group.hasMany(Message, { constraints: true, onDelete: "CASCADE" });
-Message.belongsTo(Group);
-Group.hasMany(ArchievedMsg, { constraints: true, onDelete: "CASCADE" });
-ArchievedMsg.belongsTo(Group);
+Group.hasMany(Message, { foreignKey: "groupId" });
+Message.belongsTo(Group, { foreignKey: "groupId" });
+Group.hasMany(ArchievedMessage, { foreignKey: "groupId" });
+ArchievedMessage.belongsTo(Group, { foreignKey: "groupId" });
 
-User.hasMany(ForgotPw, { constraints: true, onDelete: "CASCADE" });
-ForgotPw.belongsTo(User);
+User.hasMany(ForgotPassword);
+ForgotPassword.belongsTo(User);
 
 sequelise
   .sync()
@@ -79,7 +79,6 @@ sequelise
 
 //new instance of socket.io by passing the server object
 const io = new Server(server, {
-  pingTimeout: 60000,
   cors: {
     origin: ["http://127.0.0.1:5500", "https://admin.socket.io"],
     credentials: true,
@@ -93,9 +92,9 @@ io.on("connection", (socket) => {
     console.log("groupId");
     socket.join(groupId);
   });
-  socket.on("new msg", (msgToBeSent, name, currentGroupId) => {
+  socket.on("new message", (messageToBeSent, name, currentGroupId) => {
     if (!currentGroupId) return console.log("nothing to be sent");
-    socket.to(currentGroupId).emit("receive msg", msgToBeSent, name);
+    socket.to(currentGroupId).emit("receive message", messageToBeSent, name);
   });
 });
 

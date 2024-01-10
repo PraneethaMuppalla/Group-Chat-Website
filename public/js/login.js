@@ -10,7 +10,7 @@ async function loginForm(e) {
   try {
     e.preventDefault();
     const loginUser = {
-      phoneNum: phoneNumEl.value,
+      phoneNumber: phoneNumEl.value,
       password: passwordEl.value,
     };
     const response = await axiosInstance.post("/user/login", loginUser);

@@ -26,7 +26,7 @@
   color: white;
 }
 
-.grp-heading {
+.group-heading {
   font-family: cursive;
   font-size: 25px;
   padding: 5px;
@@ -173,7 +173,7 @@
   border: none;
   border-bottom: 2px solid black;
 }
-.error-msg {
+.error-message {
   color: red;
   margin: 5px;
 

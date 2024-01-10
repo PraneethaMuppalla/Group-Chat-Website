@@ -1,16 +1,16 @@
 const { CronJob } = require("cron");
 const Message = require("../models/message");
-const ArchievedMsg = require("../models/archieved-msg");
+const Archievedmessage = require("../models/archieved-message");
 const { Op } = require("sequelize");
 
 const job = CronJob.from({
   cronTime: "0 0 0 * * *",
-  onTick: archieveMsg,
+  onTick: archievemessage,
   start: true,
   timeZone: "Asia/Kolkata",
 });
 
-async function archieveMsg() {
+async function archievemessage() {
   try {
     const oldDate = new Date();
     const date = oldDate.getDate();
@@ -24,12 +24,12 @@ async function archieveMsg() {
     await Promise.all(
       messages.flatMap((each) => {
         const { id, message, time, isImage, userId, groupId, createdAt } = each;
-        const promise1 = ArchievedMsg.create({
+        const promise1 = Archievedmessage.create({
           id,
-          message,
-          time,
-          isImage,
-          userId,
+          text,
+          attachmentType,
+          attachmentUrl,
+          senderId,
           groupId,
         });
         const promise2 = each.destroy();

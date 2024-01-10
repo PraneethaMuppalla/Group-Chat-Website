@@ -2,25 +2,26 @@ const { Op } = require("sequelize");
 
 const Group = require("../models/group");
 const User = require("../models/user");
-const GroupMember = require("../models/groupMember");
-const sequelize = require("../util/database");
+const GroupMember = require("../models/group-member");
+const sequelize = require("../utils/database");
 
 function isStringInValid(string) {
   if (!string || string.length === 0) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
-exports.createNewGroup = async (req, res, next) => {
+const createNewGroup = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const { groupName } = req.body;
     if (isStringInValid(groupName)) {
-      return res
-        .status(401)
-        .json({ success: false, msg: "Bad request. Parameters are missing" });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
     const group = await Group.create(
       {
@@ -33,55 +34,67 @@ exports.createNewGroup = async (req, res, next) => {
       transaction: t,
     });
     await t.commit();
-    res.status(201).json({ success: true, msg: "Group created" });
+    res.status(201).json({ success: true, message: "Group created" });
   } catch (err) {
     await t.rollback();
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.getGroupsOfUser = async (req, res, next) => {
+const getGroupsOfUser = async (req, res, next) => {
   try {
     const response = await req.user.getGroups();
-    res.status(200).json(response);
+    res.status(200).json({ success: true, groups: response });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.getNumData = async (req, res, next) => {
+const getUserDataBasedOnPhoneNumber = async (req, res, next) => {
   try {
-    const { phoneNum } = req.body;
-    if (!phoneNum || phoneNum.length != 10) {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
+    }
+    if (phoneNumber === req.user.phoneNumber) {
       return res
-        .status(400)
-        .json({ success: false, msg: "Bad request. Parameters are wrong." });
+        .status(409)
+        .json({ success: false, message: "It's his number" });
     }
-    if (phoneNum === req.user.phoneNum) {
-      return res.status(409).json({ success: false, msg: "It's his number" });
-    }
-    const users = await User.findAll({
+    const user = await User.findOne({
       where: {
-        phoneNum,
+        phoneNumber,
       },
     });
-    const user = users[0];
+
     if (!user) {
-      return res.status(404).json({ success: false, msg: "User not Found" });
-    } else {
-      return res.status(200).json(user);
+      return res
+        .status(404)
+        .json({ success: false, message: "User not Found" });
     }
+    return res.status(200).json({ success: true, user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.addMemToGroup = async (req, res, next) => {
+const addMemberToGroup = async (req, res, next) => {
   try {
     const { groupId, userId } = req.body;
+    if (!groupId || !userId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
+    }
     const groupDetails = await Group.findOne({
       where: { id: groupId },
       attributes: ["id"],
@@ -94,24 +107,23 @@ exports.addMemToGroup = async (req, res, next) => {
         },
       ],
     });
-    console.log(groupDetails);
     if (!groupDetails || groupDetails["users"].length > 0) {
       return res
         .status(409)
-        .json({ success: "false", msg: "Conflict occured" });
-    } else {
-      const userModel = await User.findByPk(userId);
-      const response = await groupDetails.addUser(userModel);
-      return res.status(200).json({ user: userModel, response });
+        .json({ success: "false", message: "Conflict occured" });
     }
+    const userModel = await User.findByPk(userId);
+    const response = await groupDetails.addUser(userModel);
+    return res.status(200).json({ user: userModel, response });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.joinMemToCommonGroup = async (req, res, next) => {
+const addMemberToCommonGroup = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const groupDetails = await Group.findOne({
       where: { id: 1 },
       attributes: ["id"],
@@ -119,7 +131,7 @@ exports.joinMemToCommonGroup = async (req, res, next) => {
         {
           model: User,
           through: {
-            where: { userId: req.user.id },
+            where: { userId },
           },
         },
       ],
@@ -127,26 +139,25 @@ exports.joinMemToCommonGroup = async (req, res, next) => {
     if (!groupDetails || groupDetails["users"].length > 0) {
       return res
         .status(409)
-        .json({ success: "false", msg: "Conflict occured" });
-    } else {
-      const response = await groupDetails.addUser(req.user);
-      return res.json(response);
+        .json({ success: "false", message: "Conflict occured" });
     }
-
-    //res.json(groupDetails);
+    const response = await groupDetails.addUser(req.user);
+    return res.json(response);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.getUsersOfGroup = async (req, res, next) => {
+const getUsersOfGroup = async (req, res, next) => {
   try {
     const groupId = req.query.groupId;
     if (!groupId) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Bad request. Parameters are wrong." });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
     const response = await Group.findByPk(groupId, {
       attributes: [],
@@ -162,56 +173,43 @@ exports.getUsersOfGroup = async (req, res, next) => {
     });
     if (response) {
       return res.json(response.users);
-    } else {
-      return res.status(404).json({ msg: "Group not find" });
     }
+    return res.status(404).json({ message: "Group not find" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ msg: "Some error occured" });
+    return res.status(500).json({ message: "Some error occured" });
   }
 };
 
-exports.deleteMemOfGroup = async (req, res, next) => {
+const removeMemberFromGroup = async (req, res, next) => {
   try {
-    const { groupId, memId } = req.query;
-    if (!groupId || !memId) {
-      return res
-        .status(400)
-        .json({ msg: "Bad request. some parameters missing" });
+    const { groupId, userId } = req.query;
+    if (!groupId || !userId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bad request. Please ensure all required parameters are provided.",
+      });
     }
-    console.log(groupId, memId);
     const response = await GroupMember.destroy({
-      where: { [Op.and]: [{ groupId }, { userId: memId }] },
+      where: { [Op.and]: [{ groupId }, { userId }] },
     });
     if (response >= 1) {
-      return res.status(200).json({ success: true, msg: "Member deleted" });
-    } else {
-      return res.status(404).json({ msg: "Member not found" });
+      return res.status(200).json({ success: true, message: "Member deleted" });
     }
+    return res.status(404).json({ message: "Member not found" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, msg: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
-exports.deleteGroup = async (req, res, next) => {
-  try {
-    const { groupId } = req.query;
-    if (!groupId) {
-      return res
-        .status(400)
-        .json({ msg: "Bad request. some parameters missing" });
-    }
-    const response = await Group.destroy({
-      where: { id: groupId },
-    });
-    if (response >= 1) {
-      return res.status(200).json({ success: true, msg: "Group deleted" });
-    } else {
-      return res.status(404).json({ msg: "Group not found" });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, msg: err });
-  }
+module.exports = {
+  createNewGroup,
+  getGroupsOfUser,
+  getUserDataBasedOnPhoneNumber,
+  addMemberToGroup,
+  addMemberToCommonGroup,
+  getUsersOfGroup,
+  removeMemberFromGroup,
 };

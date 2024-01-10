@@ -1,30 +1,22 @@
 const Sequelize = require("sequelize");
-const sequelize = require("../util/database");
+const sequelize = require("../utils/database");
 const currentDate = new Date();
 const istDateString = currentDate.toLocaleString("en-IN", {
   timeZone: "Asia/Kolkata",
 });
 
-const ArchievedMsg = sequelize.define("archieved-msg", {
+const GroupMember = sequelize.define("group-member", {
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
   },
-  message: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
-  time: {
-    type: Sequelize.STRING,
-    defaultValue: istDateString,
-    allowNull: false,
-  },
-  isImage: {
+  isAdmin: {
     type: Sequelize.BOOLEAN,
+    allowNull: false,
     defaultValue: false,
   },
 });
 
-module.exports = ArchievedMsg;
+module.exports = GroupMember;

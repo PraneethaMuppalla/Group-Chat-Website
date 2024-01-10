@@ -14,7 +14,7 @@ async function authUser(req, res, next) {
     next();
   } catch (err) {
     console.error(err);
-    res.status(401).json({ success: false, msg: "User is not authorized" });
+    res.status(401).json({ success: false, message: "User is not authorized" });
   }
 }
 module.exports = authUser;
